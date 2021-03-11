@@ -1,9 +1,7 @@
 require 'curses'
 
-
-
+# Terminal based snake game that attaches to a Curses window
 class Snake
-  
   APPLE = 'o'.ord
   SNAKE = '#'.ord
   SPACE = ' '.ord
@@ -15,7 +13,7 @@ class Snake
     @running = false
   end
 
-  def run(fps=10)
+  def run(fps = 10)
     @running = true
     spawn_apple
     listen_to_keys
@@ -26,11 +24,11 @@ class Snake
     score
   end
 
-  def listen_to_keys()
+  def listen_to_keys
     @window.keypad(true)
     Thread.new do
       while @running
-        case @window.getch()
+        case @window.getch
         when Curses::KEY_UP    then @direction = :up
         when Curses::KEY_DOWN  then @direction = :down
         when Curses::KEY_LEFT  then @direction = :left
@@ -40,14 +38,15 @@ class Snake
     end
   end
 
-  def move()
+  def move
     x, y = @parts.first
-    head = case @direction
-    when :up    then [x - 1, y]
-    when :down  then [x + 1, y]
-    when :left  then [x, y - 1]
-    when :right then [x, y + 1]
-    end
+    head =
+      case @direction
+      when :up    then [x - 1, y]
+      when :down  then [x + 1, y]
+      when :left  then [x, y - 1]
+      when :right then [x, y + 1]
+      end
 
     @window.setpos(*head)
     case @window.inch  # character under cursor
@@ -59,42 +58,41 @@ class Snake
     end
 
     grow(head)
-    
+
     @window.refresh
   end
-  
+
   def grow(head)
     @window.setpos(*head)
     @window.addstr(SNAKE.chr)
     @parts.unshift(head)
   end
 
-  def shorten()
+  def shorten
     tail = @parts.pop
     @window.setpos(*tail)
     @window.addstr(' ')
   end
 
-  def score()
+  def score
     @parts.size - 1
   end
 
-  def spawn_apple()
-    rand_y = rand(2..(@window.maxy-2))
-    rand_x = rand(2..(@window.maxx-2))
+  def spawn_apple
+    rand_y = rand(2..(@window.maxy - 2))
+    rand_x = rand(2..(@window.maxx - 2))
     @window.setpos(rand_y, rand_x)
     @window.addstr(APPLE.chr)
   end
 
-  def game_over()
+  def game_over
     msg = " Game over! Score: #{score} "
     @window.setpos(@window.maxy / 2, @window.maxx / 2 - msg.size / 2)
     @window.addstr(msg)
-    @window.refresh()
+    @window.refresh
     sleep 2
     @running = false
   end
-
 end
 
 Curses.init_screen
@@ -102,7 +100,7 @@ Curses.curs_set(0)
 
 begin
   window = Curses.stdscr
-  window.box(?|.ord, ?─.ord)
+  window.box('|'.ord, '─'.ord)
   window.refresh
 
   snek = Snake.new(window)
@@ -112,4 +110,3 @@ ensure
 end
 
 puts "Score: #{score}"
-
